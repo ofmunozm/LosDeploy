@@ -4,10 +4,10 @@ Un microservicio Flask y Python diseñado para gestionar una lista negra (blackl
 
 ## 🚀 Características
 
-- **Microservicio Flask** para una API RESTful rápida y eficiente
-- **Base de datos SQLite/PostgreSQL** con SQLAlchemy ORM
-- **API REST completa** para añadir y consultar emails en la lista negra
-- **Autenticación con Token Estático** para facilitar el uso del API en etapa de desarrollo
+- Microservicio Flask
+- Base de datos PostgreSQL con SQLAlchemy ORM
+- API REST para añadir y consultar emails en la lista negra
+- Autenticación con Token Estático para facilitar el uso del API en etapa de desarrollo
 
 ## 📁 Estructura del Proyecto
 
@@ -21,6 +21,7 @@ LosDeploy/
 ├── requirements.txt    # Dependencias de Python
 └── routes.py           # Rutas (endpoints) de la API
 ```
+
 
 ## 🛠️ Instalación y Configuración
 
@@ -57,6 +58,7 @@ python application.py
 ```
 
 La aplicación estará disponible en: `http://localhost:5000`
+
 
 ## 📡 API Endpoints
 
