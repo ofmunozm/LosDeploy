@@ -113,3 +113,11 @@ curl -X POST http://localhost:5001/blacklists \
 curl -X GET http://localhost:5001/blacklists/test@example.com \
   -H "Authorization: Bearer token-estatico-123456"
 ```
+
+## 📘 Documentación del API REST
+
+La documentación completa de los endpoints del proyecto se encuentra disponible en Postman.  
+En esta colección se especifican los métodos, parámetros, cuerpos de solicitud y ejemplos de respuesta para cada uno de los servicios del API.
+
+🔗 **Acceso a la colección en Postman:**  
+[Ver documentación del API en Postman](https://www.postman.com/omar-253386/workspace/blacklist-api/collection/43599343-3e4639b5-90dc-4394-81da-56544d800cad?action=share&source=copy-link&creator=43599343)
