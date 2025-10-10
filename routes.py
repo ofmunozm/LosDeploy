@@ -46,6 +46,9 @@ def add_to_blacklist():
                 'error': 'blocked_reason no puede exceder 255 caracteres'
             }), 400
         
+        # Obtener IP del cliente
+        ip_address = request.remote_addr or request.environ.get('HTTP_X_FORWARDED_FOR', 'unknown')
+        
         # Verificar si el email ya está en la lista negra
         existing = Blacklist.query.filter_by(email=email).first()
         if existing:
@@ -58,7 +61,8 @@ def add_to_blacklist():
         new_blacklist = Blacklist(
             email=email,
             app_uuid=app_uuid,
-            blocked_reason=blocked_reason
+            blocked_reason=blocked_reason,
+            ip_address=ip_address
         )
         
         db.session.add(new_blacklist)

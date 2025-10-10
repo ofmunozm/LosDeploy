@@ -10,6 +10,7 @@ class Blacklist(db.Model):
     email = db.Column(db.String(255), nullable=False, index=True)
     app_uuid = db.Column(db.String(255), nullable=False)
     blocked_reason = db.Column(db.String(255), nullable=True)
+    ip_address = db.Column(db.String(50), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     
     def __repr__(self):
