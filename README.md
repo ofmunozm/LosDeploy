@@ -1,6 +1,6 @@
 # Flask App - blacklist - LosDeploy
 
-Un microservicio Flask y Python diseñado para gestionar una lista negra (blacklist) de correos electrónicos, con una API RESTful.
+Microservicio Flask y Python diseñado para gestionar lista negra (blacklist) de correos electrónicos.
 
 ## 🚀 Características
 
