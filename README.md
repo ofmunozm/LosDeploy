@@ -82,7 +82,7 @@ STATIC_TOKEN=token-estatico-123456
 python application.py
 ```
 
-La aplicación estará disponible en: `http://localhost:5000`
+La aplicación estará disponible en: `http://localhost:5001`
 
 
 ## 📡 API Endpoints
@@ -102,15 +102,15 @@ Bearer token-estatico-123456
 
 #### 2. Agregar un email a la lista negra:
 ```bash
-curl -X POST http://localhost:5000/blacklists \
+curl -X POST http://localhost:5001/blacklists \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer mi-token-estatico-123456" \
+  -H "Authorization: Bearer token-estatico-123456" \
   -d '{"email": "test@example.com", "app_uuid": "app-123", "blocked_reason": "Spam"}'
 ```
 
 #### 3. Consultar si un email está en la lista negra:
 ```bash
-curl -X GET http://localhost:5000/blacklists/test@example.com \
+curl -X GET http://localhost:5001/blacklists/test@example.com \
   -H "Authorization: Bearer token-estatico-123456"
 ```
 
