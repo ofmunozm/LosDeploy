@@ -25,9 +25,34 @@ LosDeploy/
 
 ## 🛠️ Instalación y Configuración
 
+### 0. intalación base de datos PostgresSQL
+
+  #### Parte 1: 
+  - Instalar PostgreSQL
+  - Abre PgAdmin. Clic derecho en Servers → Create → Server. 
+  - En la pestaña General, ponle un nombre (por ejemplo, PostgresLocal).
+  - En la pestaña Connection, usa estos valores:
+      Host name/address: localhost
+      Port: 5432
+      Username: postgres
+      Password: postgres
+  - Guarda y conéctate.
+  
+  #### Parte 2:
+  - Crear la base de datos
+  - Clic derecho en Databases → Create → Database...
+    - Nombre: blacklist_db
+    - Guarda
+
+  #### Parte 3:
+  - Construir la URI de conexión
+  - formato: postgresql://<usuario>:<contraseña>@<host>:<puerto>/<nombre_base_datos>
+  - ejmeplo: postgresql://postgres:postgres@localhost:5432/blacklist_db
+
+
 ### 1. Clonar o descargar el proyecto
 ```bash
-cd /Users/omarfernando/Desktop/DevOps/LosDeploy
+cd LosDeploy
 ```
 
 ### 2. Crear entorno virtual (recomendado)
@@ -46,7 +71,7 @@ pip install -r requirements.txt
 ### 4. Configurar variables de entorno
 Crear un archivo `.env` en la raíz del proyecto:
 ```env
-DATABASE_URL=sqlite:///local.db
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/blacklist_db
 SECRET_KEY=mi_clave_ultra_secreta_123
 JWT_SECRET_KEY=mi-jwt-secret-key
 STATIC_TOKEN=token-estatico-123456
