@@ -78,13 +78,13 @@ Bearer token-estatico-123456
 curl -X POST http://localhost:5000/blacklists \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer mi-token-estatico-123456" \
-  -d '{"email": "test@example.com", "app_uuid": "app-123", "blocked_reason": "Spamming"}'
+  -d '{"email": "test@example.com", "app_uuid": "app-123", "blocked_reason": "Spam"}'
 ```
 
 #### 3. Consultar si un email está en la lista negra:
 ```bash
 curl -X GET http://localhost:5000/blacklists/test@example.com \
-  -H "Authorization: Bearer mi-token-estatico-123456"
+  -H "Authorization: Bearer token-estatico-123456"
 ```
 
 ## 🗄️ Modelos de Base de Datos
@@ -95,20 +95,3 @@ curl -X GET http://localhost:5000/blacklists/test@example.com \
 - `app_uuid`: UUID de la aplicación que bloqueó el email (cadena)
 - `blocked_reason`: Motivo del bloqueo (cadena, opcional)
 - `created_at`: Fecha y hora de creación del registro
-
-## 🔧 Configuración
-
-El archivo `config.py` centraliza las configuraciones clave de la aplicación, incluyendo:
--   `SECRET_KEY`: Clave secreta de Flask para seguridad general.
--   `DATABASE_URL`: URI de conexión a la base de datos (SQLite o PostgreSQL).
--   `JWT_SECRET_KEY`: Clave secreta para la firma y verificación de JSON Web Tokens (JWT).
--   `STATIC_TOKEN`: Token estático para la autenticación básica de la API.
-
-Estas variables se cargan desde el archivo `.env` o usan valores por defecto para desarrollo.
-
-## 📝 Tecnologías Utilizadas
-
--   **Backend**: Python 3.x, Flask, SQLAlchemy
--   **Base de datos**: SQLite (desarrollo), PostgreSQL (producción)
--   **Autenticación**: Token Estático, Flask-JWT-Extended (preparado)
--   **Herramientas**: python-dotenv, psycopg2-binary, gunicorn, Flask-RESTful, Flask-Marshmallow
