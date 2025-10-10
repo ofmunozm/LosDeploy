@@ -70,7 +70,6 @@ def add_to_blacklist():
         
         return jsonify({
             'message': 'Email agregado a la lista negra exitosamente',
-            'data': new_blacklist.to_dict()
         }), 201
         
     except Exception as e:
@@ -88,12 +87,10 @@ def check_blacklist(email):
             return jsonify({
                 'in_blacklist': True,
                 'blocked_reason': blacklist_entry.blocked_reason,
-                'data': blacklist_entry.to_dict()
             }), 200
         else:
             return jsonify({
                 'in_blacklist': False,
-                'blocked_reason': None
             }), 200
             
     except Exception as e:
