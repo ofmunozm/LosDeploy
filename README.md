@@ -113,12 +113,3 @@ curl -X POST http://localhost:5001/blacklists \
 curl -X GET http://localhost:5001/blacklists/test@example.com \
   -H "Authorization: Bearer token-estatico-123456"
 ```
-
-## 🗄️ Modelos de Base de Datos
-
-### Blacklist
-- `id`: Identificador único (entero)
-- `email`: Dirección de correo electrónico (cadena, única, indexada)
-- `app_uuid`: UUID de la aplicación que bloqueó el email (cadena)
-- `blocked_reason`: Motivo del bloqueo (cadena, opcional)
-- `created_at`: Fecha y hora de creación del registro
