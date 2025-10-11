@@ -54,7 +54,6 @@ def add_to_blacklist():
         if existing:
             return jsonify({
                 'message': 'El email ya está en la lista negra',
-                'data': existing.to_dict()
             }), 200
         
         # Crear nuevo registro
