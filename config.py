@@ -15,4 +15,4 @@ class Config:
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'jwt-dev-secret'
     
     # Token estático para autenticación
-    STATIC_TOKEN = os.environ.get('STATIC_TOKEN') or 'Bearer token-estatico-123'
+    STATIC_TOKEN = os.environ.get('STATIC_TOKEN') or 'token-estatico-123'
