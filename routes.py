@@ -23,6 +23,12 @@ def token_required(f):
     return decorated_function
 
 
+# Endpoint para health check AWS
+@api_bp.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({'status': 'healthy'}), 200
+
+
 # POST /blacklists - Agregar email a lista negra
 @api_bp.route('/blacklists', methods=['POST'])
 @token_required
