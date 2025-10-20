@@ -2,6 +2,9 @@
 
 Microservicio Flask y Python diseñado para gestionar lista negra (blacklist) de correos electrónicos.
 
+## Nota: 
+correr con versión de python 3.9.6
+
 ## 🚀 Características
 
 - Microservicio Flask
