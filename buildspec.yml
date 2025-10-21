@@ -1,26 +1,21 @@
 version: 0.2
-
 phases:
   install:
     commands:
       - echo "Installing dependencies..."
       - python -m pip install --upgrade pip
-      - pip install virtualenv
-      - virtualenv venv
-      - source venv/bin/activate
-      - pip install -r requirements.txt
   pre_build:
     commands:
-      - echo "No need to move application files, already in root of artifact."
+      - echo "Listing files..."
       - ls -la
   build:
     commands:
       - echo "No build step required for this Python application."
   post_build:
     commands:
-      - echo "Zipping application for deployment..."
-      - zip -r LosDeploy.zip . -x "*venv*" -x "*.git*"
+      - echo "Cleaning up..."
+      - rm -rf venv .git
+
 artifacts:
   files:
-    - LosDeploy.zip
-  discard-paths: yes
+    - '**/*'

@@ -28,6 +28,11 @@ def token_required(f):
 def health_check():
     return jsonify({'status': 'healthy'}), 200
 
+# Endpoint para probar pipeline
+@api_bp.route('/pipeline', methods=['GET'])
+def health_pipeline():
+    return jsonify({'se creo': 'pipeline'}), 200
+
 
 # POST /blacklists - Agregar email a lista negra
 @api_bp.route('/blacklists', methods=['POST'])
