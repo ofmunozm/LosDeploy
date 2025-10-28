@@ -125,3 +125,9 @@ En esta colección se especifican los métodos, parámetros, cuerpos de solicitu
 🔗 **Acceso a la colección en Postman:**  
 [Ver documentación del API en Postman](https://www.postman.com/omar-253386/workspace/blacklist-api/collection/43599343-3e4639b5-90dc-4394-81da-56544d800cad?action=share&source=copy-link&creator=43599343)
 
+## ✅ Ejecución de Pruebas Unitarias (Local)
+
+**Ejecuta todas las pruebas unitarias** usando `pytest`:
+    ```bash
+    pytest
+    ```
