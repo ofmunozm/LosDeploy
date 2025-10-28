@@ -2,18 +2,20 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo "Installing dependencies..."
+      - echo "Intalando dependencias..."
       - python -m pip install --upgrade pip
+      - pip install -r requirements.txt
   pre_build:
     commands:
-      - echo "Listing files..."
+      - echo "Listando archivos..."
       - ls -la
   build:
     commands:
-      - echo "No build step required for this Python application."
+      - echo "Corriendo pruebas..."
+      - pytest
   post_build:
     commands:
-      - echo "Cleaning up..."
+      - echo "Limpiando..."
       - rm -rf venv .git
 
 artifacts:
