@@ -13,7 +13,7 @@ def token_header(mod):
 def test_health_check(client):
     resp = client.get("/health")
     assert resp.status_code == 200
-    assert resp.get_json() == {"status": "healthy"}
+    assert resp.get_json() == {"status": "unhealthy"} # Esto debería ser "healthy, se modifica para prueba"
 
 
 def test_token_required_missing(client):

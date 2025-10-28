@@ -129,3 +129,4 @@ En esta colección se especifican los métodos, parámetros, cuerpos de solicitu
 #Pruebas Pipeline
 
 - Prueba 1 - despliegue exitoso
+- Prueba 2 - despliegue fallido
