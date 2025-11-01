@@ -87,6 +87,11 @@ python application.py
 
 La aplicación estará disponible en: `http://localhost:5001`
 
+### 6. Correr Test (Opcional)
+```bash
+pytest
+```
+
 
 ## 📡 API Endpoints
 
