@@ -128,10 +128,13 @@ La documentación completa de los endpoints del proyecto se encuentra disponible
 En esta colección se especifican los métodos, parámetros, cuerpos de solicitud y ejemplos de respuesta para cada uno de los servicios.
 
 🔗 **Acceso a la colección en Postman:**  
-[Ver documentación del API en Postman](https://www.postman.com/omar-253386/workspace/blacklist-api/collection/43599343-3e4639b5-90dc-4394-81da-56544d800cad?action=share&source=copy-link&creator=43599343)
+[Ver documentación del API en Postman](https://www.postman.com/omar-253386/workspace/public-blacklist-api/collection/43599343-d98f947d-6c65-43b7-84a5-6f701a9eeb8b?action=share&creator=43599343)
 
 ## ✅ Ejecución de Pruebas Unitarias (Local)
 
+primero tener activado el entorno e instaladas las dependencias necesarias del proyecto.
+
+en terminal:
 **Ejecuta todas las pruebas unitarias** usando `pytest`:
     ```bash
     pytest
