@@ -80,14 +80,67 @@ JWT_SECRET_KEY=mi-jwt-secret-key
 STATIC_TOKEN=token-estatico-123456
 ```
 
-### 5. Ejecutar la aplicación
+### 5. Ejecutar la aplicación (sin Docker)
 ```bash
 python application.py
 ```
 
 La aplicación estará disponible en: `http://localhost:5001`
 
-### 6. Correr Test (Opcional)
+### 6. Ejecutar la aplicación con Docker (Local)
+
+Para correr la aplicación utilizando Docker y conectarse a tu PostgreSQL local, sigue estos pasos:
+
+#### 6.1. Asegúrate de que Docker y PostgreSQL estén funcionando
+
+1.  **Docker Desktop:** Asegúrate de que Docker Desktop (o tu motor Docker) esté corriendo en tu sistema.
+2.  **PostgreSQL local:** Verifica que tu servicio de PostgreSQL local esté activo. En macOS con Homebrew:
+    ```bash
+    brew services start postgresql
+    brew services list # Para verificar el estado
+    ```
+3.  **Base de Datos `blacklist_db`:** Confirma que la base de datos `blacklist_db` exista en tu PostgreSQL local. Si no, créala a través de PgAdmin o `psql`:
+    ```bash
+    psql -U postgres -c "CREATE DATABASE blacklist_db;"
+    # Contraseña: postgres (o la que hayas configurado)
+    ```
+
+#### 6.2. Construir la imagen Docker de la aplicación
+
+Abre tu terminal en la raíz del proyecto (`LosDeploy/`) y construye la imagen:
+
+```bash
+docker build -t blacklist-docker .
+```
+Esto creará una imagen llamada `blacklist-docker:latest`.
+
+#### 6.3. Iniciar el contenedor Docker y conectar a la Base de Datos
+
+Ejecuta el contenedor de la aplicación, pasando la `DATABASE_URL` explícitamente para conectarte a tu PostgreSQL local.
+
+**Importante:** Ajusta `TU_CONTRASENA_POSTGRES` si tu contraseña no es `postgres`.
+
+```bash
+docker run -p 8000:5000 \
+  -e DATABASE_URL="postgresql://postgres:TU_CONTRASENA_POSTGRES@host.docker.internal:5432/blacklist_db" \
+  -e SECRET_KEY="mi_clave_ultra_secreta_123" \
+  -e JWT_SECRET_KEY="mi-jwt-secret-key" \
+  -e STATIC_TOKEN="token-estatico-123456" \
+  blacklist-docker
+```
+
+*   **`-p 8000:5000`**: Esto mapea el puerto 8000 de tu máquina local al puerto 5000 del contenedor (donde tu aplicación Flask escucha).
+*   **`-e DATABASE_URL="..."`**: Pasa la cadena de conexión completa a tu PostgreSQL local. `host.docker.internal` permite al contenedor acceder a servicios en tu máquina host.
+*   **`-e SECRET_KEY="..."`**, etc.: Es crucial pasar todas las variables de entorno que tu aplicación espera de tu archivo `.env`, ya que el `.env` local no se copia al contenedor por seguridad.
+
+#### 6.4. Probar la API
+
+Una vez que el contenedor esté corriendo, puedes acceder a tu API desde tu navegador o Postman en: `http://localhost:8000`.
+
+*   **Ruta raíz:** `http://localhost:8000`
+*   **Endpoints de la API:** Usar los ejemplos de Postman y cURL, pero apuntando a `http://localhost:8000/...`
+
+### 7. Correr Test (Opcional)
 ```bash
 pytest
 ```
