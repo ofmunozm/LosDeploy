@@ -1,17 +1,12 @@
 version: 0.2
 
 phases:
-  install_for_tests:
+  install:
     commands:
       - echo "Instalando dependencias de Python para las pruebas..."
       - python -m pip install --upgrade pip
       - pip install -r requirements.txt
   
-  test: 
-    commands:
-      - echo "Corriendo pruebas unitarias con pytest..."
-      - pytest
-
   pre_build:
     commands:
       - echo "Autenticando Docker con Amazon ECR..."
@@ -19,6 +14,8 @@ phases:
 
   build:
     commands:
+      - echo "Corriendo pruebas unitarias con pytest..."
+      - pytest
       - echo "Construyendo la imagen Docker..."
       - docker build -t blacklist-docker .
       - echo "Etiquetando la imagen Docker para ECR..."
