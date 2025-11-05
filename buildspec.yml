@@ -1,23 +1,35 @@
 version: 0.2
+
 phases:
-  install:
+  install_for_tests:
     commands:
-      - echo "Intalando dependencias..."
+      - echo "Instalando dependencias de Python para las pruebas..."
       - python -m pip install --upgrade pip
       - pip install -r requirements.txt
+  
+  test: 
+    commands:
+      - echo "Corriendo pruebas unitarias con pytest..."
+      - pytest
+
   pre_build:
     commands:
-      - echo "Listando archivos..."
-      - ls -la
+      - echo "Autenticando Docker con Amazon ECR..."
+      - aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 565528060844.dkr.ecr.us-east-2.amazonaws.com
+
   build:
     commands:
-      - echo "Corriendo pruebas..."
-      - pytest
+      - echo "Construyendo la imagen Docker..."
+      - docker build -t blacklist-docker .
+      - echo "Etiquetando la imagen Docker para ECR..."
+      - docker tag blacklist-docker:latest 565528060844.dkr.ecr.us-east-2.amazonaws.com/blacklist-docker:latest
+
   post_build:
     commands:
-      - echo "Limpiando..."
-      - rm -rf venv .git
+      - echo "Subiendo la imagen Docker a Amazon ECR..."
+      - docker push 565528060844.dkr.ecr.us-east-2.amazonaws.com/blacklist-docker:latest
+      - printf '[{"name":"blacklist-docker","imageUri":"%s"}]' 565528060844.dkr.ecr.us-east-2.amazonaws.com/blacklist-docker:latest > imagedefinitions.json
 
 artifacts:
   files:
-    - '**/*'
+    - imagedefinitions.json
