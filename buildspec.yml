@@ -3,18 +3,17 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo "Instalando dependencias de Python para las pruebas..."
       - python -m pip install --upgrade pip
       - pip install -r requirements.txt
   
   pre_build:
     commands:
-      - echo "Autenticando Docker con Amazon ECR..."
+      - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 565528060844.dkr.ecr.us-east-2.amazonaws.com
 
   build:
     commands:
-      - echo "Corriendo pruebas unitarias con pytest..."
+      - echo Running tests...
       - pytest
       - echo "Construyendo la imagen Docker..."
       - docker build -t blacklist-docker .
@@ -25,16 +24,11 @@ phases:
     commands:
       - echo "Subiendo la imagen Docker a Amazon ECR..."
       - docker push 565528060844.dkr.ecr.us-east-2.amazonaws.com/blacklist-docker:latest
-      # Generar imagedefinition.json para CodeDeploy
-      - printf '[{"name":"blacklist-docker","imageUri":"%s"}]' 565528060844.dkr.ecr.us-east-2.amazonaws.com/blacklist-docker:latest > imagedefinition.json
-      # Generar imageDetail.json para CodePipeline
-      - printf '{"ImageURI":"%s"}' 565528060844.dkr.ecr.us-east-2.amazonaws.com/blacklist-docker:latest > imageDetail.json
-      - echo Creating imagedefinitions.json...
-      - printf '[{"name":"DatosAppContainer","imageUri":"565528060844.dkr.ecr.us-east-2.amazonaws.com/blacklist-app:latest"}]' > imagedefinitions.json
+      - echo "Creating imagedefinitions.json..."
+      - printf '[{"name":"blacklist","imageUri":"565528060844.dkr.ecr.us-east-2.amazonaws.com/blacklist-docker:latest"}]' > imagedefinitions.json
+      - echo "Verificando archivo creado:"
+      - cat imagedefinitions.json
 
 artifacts:
   files:
     - imagedefinitions.json
-    - imageDetail.json
-    - appspec.json
-    - taskdef.json
