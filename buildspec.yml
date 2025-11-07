@@ -25,7 +25,14 @@ phases:
     commands:
       - echo "Subiendo la imagen Docker a Amazon ECR..."
       - docker push 565528060844.dkr.ecr.us-east-2.amazonaws.com/blacklist-docker:latest
+      # Generar imagedefinition.json para CodeDeploy
+      - printf '[{"name":"blacklist-docker","imageUri":"%s"}]' 565528060844.dkr.ecr.us-east-2.amazonaws.com/blacklist-docker:latest > imagedefinition.json
+      # Generar imageDetail.json para CodePipeline
+      - printf '{"ImageURI":"%s"}' 565528060844.dkr.ecr.us-east-2.amazonaws.com/blacklist-docker:latest > imageDetail.json
 
 artifacts:
   files:
-    - '**/*'
+    - imagedefinition.json
+    - imageDetail.json
+    - appspec.json
+    - taskdef.json
