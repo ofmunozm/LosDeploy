@@ -29,10 +29,12 @@ phases:
       - printf '[{"name":"blacklist-docker","imageUri":"%s"}]' 565528060844.dkr.ecr.us-east-2.amazonaws.com/blacklist-docker:latest > imagedefinition.json
       # Generar imageDetail.json para CodePipeline
       - printf '{"ImageURI":"%s"}' 565528060844.dkr.ecr.us-east-2.amazonaws.com/blacklist-docker:latest > imageDetail.json
+      - echo Creating imagedefinitions.json...
+      - printf '[{"name":"DatosAppContainer","imageUri":"565528060844.dkr.ecr.us-east-2.amazonaws.com/blacklist-app:latest"}]' > imagedefinitions.json
 
 artifacts:
   files:
-    - imagedefinition.json
+    - imagedefinitions.json
     - imageDetail.json
     - appspec.json
     - taskdef.json
