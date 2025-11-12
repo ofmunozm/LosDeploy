@@ -21,7 +21,7 @@ with application.app_context():
 def index():
     return {
         'message': 'Blacklist Microservice API',
-        'version': 'entrega 3.0 - desplegado en AWS ECS Fargate',
+        'version': 'entrega 3.1 - Escenario 2 Exitoso - Pipeline Completo',
         'endpoints': {
             'add_to_blacklist': 'POST /blacklists',
             'check_blacklist': 'GET /blacklists/<email>'
