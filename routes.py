@@ -26,7 +26,7 @@ def token_required(f):
 # Endpoint para health check AWS
 @api_bp.route('/health', methods=['GET'])
 def health_check():
-    return jsonify({'status': 'healthy'}), 200
+    return jsonify({'status': 'unhealthy'}), 500  # ❌ ESCENARIO 3: Health check fallido para probar CD fallido
 
 # POST /blacklists - Agregar email a lista negra
 @api_bp.route('/blacklists', methods=['POST'])
