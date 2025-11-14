@@ -12,8 +12,8 @@ def token_header(mod):
 
 def test_health_check(client):
     resp = client.get("/health")
-    assert resp.status_code == 500  # ✅ ESCENARIO 3: Test ajustado para pasar en CI
-    assert resp.get_json() == {"status": "unhealthy"}
+    assert resp.status_code == 200
+    assert resp.get_json() == {"status": "healthy"}
 
 
 def test_token_required_missing(client):
