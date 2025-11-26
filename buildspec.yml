@@ -16,7 +16,7 @@ phases:
       - echo Running tests...
       - pytest
       - echo "Construyendo la imagen Docker..."
-      - docker build -t blacklist-docker .
+      - docker build --platform linux/amd64 -t blacklist-docker .
       - echo "Etiquetando la imagen Docker para ECR..."
       - docker tag blacklist-docker:latest 565528060844.dkr.ecr.us-east-2.amazonaws.com/blacklist-docker:latest
 

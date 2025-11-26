@@ -16,13 +16,26 @@ correr con versión de python 3.9.6
 
 ```
 LosDeploy/
-├── .env                # Variables de entorno
+├── .env                # Variables de entorno (local)
 ├── .gitignore          # Archivos a ignorar en Git
 ├── application.py      # Punto de entrada de la aplicación Flask
 ├── config.py           # Configuraciones de la aplicación
 ├── models.py           # Modelos de base de datos con SQLAlchemy
 ├── requirements.txt    # Dependencias de Python
-└── routes.py           # Rutas (endpoints) de la API
+├── routes.py           # Rutas (endpoints) de la API
+├── Dockerfile          # Configuración de Docker
+└── terraform/          # Infraestructura como Código (IaC)
+    ├── main.tf         # Configuración principal de Terraform
+    ├── variables.tf    # Variables de entrada
+    ├── outputs.tf      # Outputs de recursos creados
+    ├── ecr.tf          # Repositorio de imágenes Docker (ECR)
+    ├── rds.tf          # Base de datos PostgreSQL en AWS
+    ├── ecs.tf          # Cluster y servicio ECS Fargate
+    ├── alb.tf          # Application Load Balancer
+    ├── security.tf     # Security Groups
+    ├── ssm.tf          # Secrets en AWS Parameter Store
+    ├── terraform.tfvars.example  # Ejemplo de variables (sin secrets)
+    └── README.md       # Documentación de Terraform
 ```
 
 
@@ -192,3 +205,300 @@ en terminal:
     ```bash
     pytest
     ```
+
+## ☁️ Despliegue en AWS con Terraform
+
+Este proyecto incluye infraestructura como código (IaC) usando Terraform para desplegar automáticamente todos los recursos necesarios en AWS.
+
+### Recursos que Terraform crea automáticamente:
+
+- **ECR Repository**: Registro privado de imágenes Docker
+- **RDS PostgreSQL 15.15**: Base de datos administrada (db.t3.micro)
+- **ECS Fargate**: Cluster + Service + Task Definition (contenedores sin servidor)
+- **Application Load Balancer**: Balanceador de carga público con health checks
+- **Security Groups**: Reglas de firewall para ALB, ECS y RDS
+- **SSM Parameter Store**: Almacenamiento seguro y encriptado de secrets
+- **IAM Roles**: Permisos para ejecución de tareas ECS
+- **CloudWatch Logs**: Registro de logs de contenedores
+
+### Prerequisitos:
+
+1. **Terraform instalado** (v1.0+):
+   ```bash
+   brew install terraform  # macOS
+   ```
+
+2. **AWS CLI configurado**:
+   ```bash
+   aws configure
+   # Ingresa: Access Key ID, Secret Access Key, Region (us-east-2)
+   ```
+
+3. **Docker Desktop** funcionando (para construir y subir imágenes)
+
+### Paso a paso para desplegar:
+
+#### 1. Configurar variables de Terraform
+
+```bash
+cd terraform/
+cp terraform.tfvars.example terraform.tfvars
+```
+
+Edita `terraform.tfvars` con tus valores reales (este archivo NO se sube a GitHub):
+```hcl
+aws_region   = "us-east-2"
+project_name = "blacklist"
+
+db_username = "postgres"
+db_password = "TU_PASSWORD_SEGURO_AQUI"  # Cambia esto
+db_name     = "blacklist_db"
+
+secret_key     = "tu-secret-key-aqui"
+jwt_secret_key = "tu-jwt-secret-aqui"
+static_token   = "tu-token-estatico-aqui"
+```
+
+#### 2. Inicializar Terraform
+
+```bash
+terraform init
+```
+
+#### 3. Ver qué se va a crear
+
+```bash
+terraform plan
+```
+
+Esto muestra todos los recursos que Terraform creará en AWS.
+
+#### 4. Crear la infraestructura
+
+```bash
+terraform apply
+```
+
+Escribe `yes` para confirmar. Terraform creará:
+- RDS PostgreSQL (tarda ~10 minutos)
+- ECR, ECS, ALB, Security Groups, etc.
+
+#### 5. Obtener la URL del API
+
+```bash
+terraform output alb_url
+```
+
+Guarda esta URL, es la URL pública de tu API.
+
+#### 6. Construir y subir imagen Docker a ECR
+
+Primero, hacer login a ECR:
+```bash
+aws ecr get-login-password --region us-east-2 | \
+  docker login --username AWS --password-stdin $(terraform output -raw ecr_repository_url)
+```
+
+Construir imagen (importante: usar plataforma AMD64 para AWS):
+```bash
+cd ..  # volver a la raíz del proyecto
+docker build --platform linux/amd64 -t blacklist-docker .
+```
+
+Etiquetar y subir:
+```bash
+docker tag blacklist-docker:latest $(cd terraform && terraform output -raw ecr_repository_url):latest
+docker push $(cd terraform && terraform output -raw ecr_repository_url):latest
+```
+
+#### 7. Forzar redespliegue en ECS
+
+```bash
+aws ecs update-service \
+  --cluster blacklist-cluster \
+  --service blacklist-service \
+  --force-new-deployment \
+  --region us-east-2
+```
+
+Espera 1-2 minutos y tu API estará disponible en la URL del ALB.
+
+### Comandos útiles de Terraform:
+
+```bash
+# Ver outputs (URLs, endpoints)
+terraform output
+
+# Ver logs de ECS
+aws logs tail /ecs/blacklist --follow --region us-east-2
+
+# Actualizar infraestructura después de cambios en archivos .tf
+terraform plan
+terraform apply
+
+# Destruir toda la infraestructura (⚠️ CUIDADO)
+terraform destroy
+```
+
+### Actualizar código de la aplicación:
+
+Cuando hagas cambios en el código Python:
+
+1. Construir nueva imagen:
+```bash
+docker build --platform linux/amd64 -t blacklist-docker .
+```
+
+2. Subir a ECR:
+```bash
+docker tag blacklist-docker:latest [ECR_URL]:latest
+docker push [ECR_URL]:latest
+```
+
+3. Forzar redespliegue:
+```bash
+aws ecs update-service --cluster blacklist-cluster \
+  --service blacklist-service --force-new-deployment --region us-east-2
+```
+
+### Documentación completa:
+
+Para más detalles, consulta: [terraform/README.md](terraform/README.md)
+
+## 🔄 CI/CD Pipeline (Integración con Terraform)
+
+El proyecto incluye un pipeline CI/CD automatizado que se ejecuta cada vez que haces `git push` a GitHub.
+
+### Componentes del Pipeline
+
+1. **CodePipeline**: Orquestador principal
+   - **Source**: GitHub (detecta cambios automáticamente)
+   - **Build**: CodeBuild (ejecuta buildspec.yml)
+   - **Deploy**: ECS (actualiza servicio automáticamente)
+
+2. **CodeBuild**: Ejecuta tests y construye imagen Docker
+   - Archivo de configuración: `buildspec.yml`
+   - Runtime: Docker-in-Docker
+   - Fases: install → pre_build → build → post_build
+
+3. **ECS Deploy**: Actualiza servicio en Fargate
+   - Lee `imagedefinitions.json` generado por CodeBuild
+   - Rolling update con health checks
+   - Rollback automático si health checks fallan
+
+### Flujo Completo
+
+```
+1. Developer: git push a GitHub (rama main)
+   ↓
+2. CodePipeline: Detecta cambio automáticamente
+   ↓
+3. CodeBuild ejecuta buildspec.yml:
+   - Instala dependencias (pip install)
+   - Ejecuta tests (pytest) ← Si fallan, pipeline se detiene
+   - Login a ECR
+   - Build imagen Docker (--platform linux/amd64)
+   - Tag y push a ECR
+   - Genera imagedefinitions.json
+   ↓
+4. CodePipeline Deploy:
+   - Lee imagedefinitions.json
+   - Actualiza ECS Service (blacklist-service)
+   ↓
+5. ECS Fargate:
+   - Pull nueva imagen de ECR
+   - Inicia nuevo contenedor
+   - Health check en /health endpoint
+   - Si pasa: traffic switch to new version
+   - Si falla: rollback automático
+   ↓
+6. ✅ Nueva versión en producción
+```
+
+### buildspec.yml - Explicación
+
+```yaml
+phases:
+  install:
+    commands:
+      - pip install -r requirements.txt  # Dependencias para tests
+
+  pre_build:
+    commands:
+      - aws ecr get-login-password | docker login ...  # Auth ECR
+
+  build:
+    commands:
+      - pytest  # ← CRITICAL: Tests deben pasar o pipeline falla
+      - docker build --platform linux/amd64 -t blacklist-docker .
+      - docker tag blacklist-docker:latest [ECR_URL]:latest
+
+  post_build:
+    commands:
+      - docker push [ECR_URL]:latest
+      - printf '[{"name":"blacklist","imageUri":"[ECR_URL]:latest"}]' > imagedefinitions.json
+
+artifacts:
+  files:
+    - imagedefinitions.json  # ← ECS lee esto para saber qué imagen usar
+```
+
+### Integración con Terraform
+
+**¿Cómo funcionan juntos?**
+
+- **Terraform**: Crea infraestructura (cluster, service, ALB, RDS, etc.)
+  - Se ejecuta solo cuando necesitas recrear infraestructura
+  - `terraform apply` una vez, luego no lo tocas
+
+- **Pipeline CI/CD**: Despliega cambios de código
+  - Se ejecuta automáticamente en cada `git push`
+  - No modifica infraestructura, solo actualiza la aplicación
+
+**Nombres importantes (deben coincidir):**
+- Container name: `"blacklist"` (en Terraform y buildspec.yml)
+- Cluster: `blacklist-cluster`
+- Service: `blacklist-service`
+- ECR repo: `blacklist-docker`
+
+### Monitoreo del Pipeline
+
+**En AWS Console:**
+1. CodePipeline → pipeline-fargate-blacklist
+   - Ver estado de cada stage (Source → Build → Deploy)
+   - Ver logs de errores
+
+2. CodeBuild → blacklist-codebuild-container
+   - Ver logs detallados de build
+   - Ver output de pytest
+
+3. ECS → blacklist-cluster → blacklist-service
+   - Ver deployments en progreso
+   - Ver health check status
+   - Ver logs en CloudWatch
+
+**Vía CLI:**
+```bash
+# Ver logs del contenedor
+aws logs tail /ecs/blacklist --follow --region us-east-2
+
+# Ver estado del servicio
+aws ecs describe-services --cluster blacklist-cluster \
+  --services blacklist-service --region us-east-2
+```
+
+### Troubleshooting Pipeline
+
+**Tests fallan:**
+- Pipeline se detiene en Build phase
+- Revisar logs de CodeBuild
+- Arreglar tests localmente primero: `pytest`
+
+**Build exitoso pero Deploy falla:**
+- ECS no puede pull imagen: verificar permisos ECR
+- Health checks fallan: verificar endpoint `/health`
+- ECS ejecuta rollback automático
+
+**Imagen incorrecta (ARM64 vs AMD64):**
+- Error: "Manifest does not contain descriptor matching platform 'linux/amd64'"
+- Solución: buildspec.yml debe tener `--platform linux/amd64`
