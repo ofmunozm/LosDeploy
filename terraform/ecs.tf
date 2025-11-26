@@ -68,7 +68,8 @@ resource "aws_iam_role_policy" "ecs_task_execution_ssm" {
           aws_ssm_parameter.database_url.arn,
           aws_ssm_parameter.secret_key.arn,
           aws_ssm_parameter.jwt_secret_key.arn,
-          aws_ssm_parameter.static_token.arn
+          aws_ssm_parameter.static_token.arn,
+          aws_ssm_parameter.new_relic_license_key.arn
         ]
       }
     ]
@@ -97,6 +98,13 @@ resource "aws_ecs_task_definition" "main" {
         }
       ]
 
+      environment = [
+        {
+          name  = "NEW_RELIC_APP_NAME"
+          value = "Blacklist Microservice (Production)"
+        }
+      ]
+
       secrets = [
         {
           name      = "DATABASE_URL"
@@ -113,6 +121,10 @@ resource "aws_ecs_task_definition" "main" {
         {
           name      = "STATIC_TOKEN"
           valueFrom = aws_ssm_parameter.static_token.arn
+        },
+        {
+          name      = "NEW_RELIC_LICENSE_KEY"
+          valueFrom = aws_ssm_parameter.new_relic_license_key.arn
         }
       ]
 

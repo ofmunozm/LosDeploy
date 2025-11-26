@@ -47,3 +47,15 @@ resource "aws_ssm_parameter" "static_token" {
     Name = "${var.project_name}-static-token"
   }
 }
+
+# New Relic License Key
+resource "aws_ssm_parameter" "new_relic_license_key" {
+  name        = "/${var.project_name}/new_relic_license_key"
+  description = "New Relic License Key para APM"
+  type        = "SecureString"
+  value       = var.new_relic_license_key
+
+  tags = {
+    Name = "${var.project_name}-new-relic-license"
+  }
+}

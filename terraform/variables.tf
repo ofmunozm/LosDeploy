@@ -53,3 +53,9 @@ variable "static_token" {
   type        = string
   sensitive   = true
 }
+
+variable "new_relic_license_key" {
+  description = "New Relic License Key (INGEST)"
+  type        = string
+  sensitive   = true
+}
