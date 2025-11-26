@@ -5,7 +5,7 @@ from functools import wraps
 
 api_bp = Blueprint('api', __name__)
 
-# Verificación de token
+# Verificación de token - Deployment con Terraform v3.3
 def token_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
