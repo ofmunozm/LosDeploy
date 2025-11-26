@@ -251,7 +251,7 @@ aws_region   = "us-east-2"
 project_name = "blacklist"
 
 db_username = "postgres"
-db_password = "TU_PASSWORD_SEGURO_AQUI"  # Cambia esto
+db_password = "TU_PASSWORD_SEGURO_AQUI"
 db_name     = "blacklist_db"
 
 secret_key     = "tu-secret-key-aqui"
@@ -289,7 +289,7 @@ Escribe `yes` para confirmar. Terraform creará:
 terraform output alb_url
 ```
 
-Guarda esta URL, es la URL pública de tu API.
+Guarda esta URL, es la URL pública del API.
 
 #### 6. Construir y subir imagen Docker a ECR
 
@@ -301,7 +301,7 @@ aws ecr get-login-password --region us-east-2 | \
 
 Construir imagen (importante: usar plataforma AMD64 para AWS):
 ```bash
-cd ..  # volver a la raíz del proyecto
+cd ..
 docker build --platform linux/amd64 -t blacklist-docker .
 ```
 
@@ -321,7 +321,7 @@ aws ecs update-service \
   --region us-east-2
 ```
 
-Espera 1-2 minutos y tu API estará disponible en la URL del ALB.
+Espera 1-2 minutos y el API estará disponible en la URL del ALB.
 
 ### Comandos útiles de Terraform:
 
@@ -336,34 +336,9 @@ aws logs tail /ecs/blacklist --follow --region us-east-2
 terraform plan
 terraform apply
 
-# Destruir toda la infraestructura (⚠️ CUIDADO)
+# Destruir toda la infraestructura
 terraform destroy
 ```
-
-### Actualizar código de la aplicación:
-
-Cuando hagas cambios en el código Python:
-
-1. Construir nueva imagen:
-```bash
-docker build --platform linux/amd64 -t blacklist-docker .
-```
-
-2. Subir a ECR:
-```bash
-docker tag blacklist-docker:latest [ECR_URL]:latest
-docker push [ECR_URL]:latest
-```
-
-3. Forzar redespliegue:
-```bash
-aws ecs update-service --cluster blacklist-cluster \
-  --service blacklist-service --force-new-deployment --region us-east-2
-```
-
-### Documentación completa:
-
-Para más detalles, consulta: [terraform/README.md](terraform/README.md)
 
 ## 🔄 CI/CD Pipeline (Integración con Terraform)
 
@@ -414,91 +389,3 @@ El proyecto incluye un pipeline CI/CD automatizado que se ejecuta cada vez que h
    ↓
 6. ✅ Nueva versión en producción
 ```
-
-### buildspec.yml - Explicación
-
-```yaml
-phases:
-  install:
-    commands:
-      - pip install -r requirements.txt  # Dependencias para tests
-
-  pre_build:
-    commands:
-      - aws ecr get-login-password | docker login ...  # Auth ECR
-
-  build:
-    commands:
-      - pytest  # ← CRITICAL: Tests deben pasar o pipeline falla
-      - docker build --platform linux/amd64 -t blacklist-docker .
-      - docker tag blacklist-docker:latest [ECR_URL]:latest
-
-  post_build:
-    commands:
-      - docker push [ECR_URL]:latest
-      - printf '[{"name":"blacklist","imageUri":"[ECR_URL]:latest"}]' > imagedefinitions.json
-
-artifacts:
-  files:
-    - imagedefinitions.json  # ← ECS lee esto para saber qué imagen usar
-```
-
-### Integración con Terraform
-
-**¿Cómo funcionan juntos?**
-
-- **Terraform**: Crea infraestructura (cluster, service, ALB, RDS, etc.)
-  - Se ejecuta solo cuando necesitas recrear infraestructura
-  - `terraform apply` una vez, luego no lo tocas
-
-- **Pipeline CI/CD**: Despliega cambios de código
-  - Se ejecuta automáticamente en cada `git push`
-  - No modifica infraestructura, solo actualiza la aplicación
-
-**Nombres importantes (deben coincidir):**
-- Container name: `"blacklist"` (en Terraform y buildspec.yml)
-- Cluster: `blacklist-cluster`
-- Service: `blacklist-service`
-- ECR repo: `blacklist-docker`
-
-### Monitoreo del Pipeline
-
-**En AWS Console:**
-1. CodePipeline → pipeline-fargate-blacklist
-   - Ver estado de cada stage (Source → Build → Deploy)
-   - Ver logs de errores
-
-2. CodeBuild → blacklist-codebuild-container
-   - Ver logs detallados de build
-   - Ver output de pytest
-
-3. ECS → blacklist-cluster → blacklist-service
-   - Ver deployments en progreso
-   - Ver health check status
-   - Ver logs en CloudWatch
-
-**Vía CLI:**
-```bash
-# Ver logs del contenedor
-aws logs tail /ecs/blacklist --follow --region us-east-2
-
-# Ver estado del servicio
-aws ecs describe-services --cluster blacklist-cluster \
-  --services blacklist-service --region us-east-2
-```
-
-### Troubleshooting Pipeline
-
-**Tests fallan:**
-- Pipeline se detiene en Build phase
-- Revisar logs de CodeBuild
-- Arreglar tests localmente primero: `pytest`
-
-**Build exitoso pero Deploy falla:**
-- ECS no puede pull imagen: verificar permisos ECR
-- Health checks fallan: verificar endpoint `/health`
-- ECS ejecuta rollback automático
-
-**Imagen incorrecta (ARM64 vs AMD64):**
-- Error: "Manifest does not contain descriptor matching platform 'linux/amd64'"
-- Solución: buildspec.yml debe tener `--platform linux/amd64`
