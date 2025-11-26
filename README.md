@@ -389,3 +389,26 @@ El proyecto incluye un pipeline CI/CD automatizado que se ejecuta cada vez que h
    ↓
 6. ✅ Nueva versión en producción
 ```
+
+### ⚠️ Configuración Manual Requerida
+
+**IMPORTANTE:** Después de crear la infraestructura con Terraform, debes configurar manualmente el Pipeline en AWS Console:
+
+1. **Ir a AWS Console → CodePipeline**
+2. **Seleccionar tu pipeline** (ej: `pipeline-fargate-blacklist`)
+3. **Click en "Edit"** (arriba a la derecha)
+4. **En la etapa "Deploy"**, click en el ícono de editar (lápiz)
+5. **Actualizar configuración:**
+   - **Cluster name:** `blacklist-cluster` (debe coincidir con Terraform)
+   - **Service name:** `blacklist-service` (debe coincidir con Terraform)
+   - **Image definitions file:** `imagedefinitions.json`
+6. **Click "Done"** y luego **"Save"**
+
+**Permisos requeridos:** El rol del Pipeline necesita permisos ECS:
+```bash
+aws iam attach-role-policy \
+  --role-name AWSCodePipelineServiceRole-us-east-2-pipeline-fargate-blacklist \
+  --policy-arn arn:aws:iam::aws:policy/AmazonECS_FullAccess
+```
+
+**Nota:** Esta configuración es manual porque el Pipeline se crea fuera de Terraform. Solo se hace **una vez** después del primer `terraform apply`.
