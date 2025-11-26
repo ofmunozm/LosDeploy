@@ -21,7 +21,7 @@ with application.app_context():
 def index():
     return {
         'message': 'Blacklist Microservice API',
-        'version': 'entrega 3.3 - Despliegue con Terraform',
+        'version': 'entrega 4.0 - Despliegue con Terraform y New Relic',
         'endpoints': {
             'add_to_blacklist': 'POST /blacklists',
             'check_blacklist': 'GET /blacklists/<email>'
